@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Вход в систему - Access{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-box-arrow-in-right"></i> Вход в систему</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <p>Неверное имя пользователя или пароль. Попробуйте снова.</p>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" action="{% url 'accounts:login' %}">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Имя пользователя</label>
+                            <input type="text" name="username" id="id_username" class="form-control" required autofocus>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label">Пароль</label>
+                            <input type="password" name="password" id="id_password" class="form-control" required>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-box-arrow-in-right"></i> Войти
+                            </button>
+                            <a href="/accounts/register/" class="btn btn-outline-secondary">
+                                <i class="bi bi-person-plus"></i> Зарегистрироваться
+                            </a>
+                        </div>
+
+                        <input type="hidden" name="next" value="{{ next }}">
+                    </form>
+
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    Платформа Access предназначена для людей с нарушениями слуха.<br>
+                    Все материалы адаптированы для удобного использования.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

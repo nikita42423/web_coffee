@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Access - Платформа доступного контента{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Герой-секция с поиском -->
+    <div class="search-hero">
+        <div class="text-center mb-4">
+            <h1 class="display-4 fw-bold">Access</h1>
+            <p class="lead">Платформа доступного контента для людей с нарушениями слуха</p>
+        </div>
+
+        <form action="{% url 'search' %}" method="GET" class="mb-5">
+            <div class="row g-3 justify-content-center">
+                <div class="col-md-8">
+                    <div class="input-group input-group-lg">
+                        <input type="text" name="q" class="form-control"
+                               placeholder="Найдите книгу, фильм или курс..."
+                               aria-label="Поиск" autofocus>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search"></i> Найти
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 justify-content-center mt-3">
+                <div class="col-auto">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="type" id="type_all" value="all" checked>
+                        <label class="form-check-label" for="type_all">Все</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="type" id="type_books" value="books">
+                        <label class="form-check-label" for="type_books">Книги</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="type" id="type_films" value="films">
+                        <label class="form-check-label" for="type_films">Фильмы</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="type" id="type_courses" value="courses">
+                        <label class="form-check-label" for="type_courses">Курсы</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Быстрые ссылки -->
+    <div class="row mb-5">
+        <div class="col-12 mb-4">
+            <h2 class="text-center">Популярные категории</h2>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <a href="/books/?has_audio=true" class="card text-decoration-none h-100 text-center border-primary">
+                <div class="card-body">
+                    <div class="display-4 mb-3">🎧</div>
+                    <h5 class="card-title">Книги с аудио</h5>
+                    <p class="card-text text-muted">Аудиоверсии для удобного прослушивания</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <a href="/films/?has_sign_language=true" class="card text-decoration-none h-100 text-center border-success">
+                <div class="card-body">
+                    <div class="display-4 mb-3">🤟</div>
+                    <h5 class="card-title">Фильмы с жестовым переводом</h5>
+                    <p class="card-text text-muted">Перевод на язык жестов</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <a href="/education/?has_subtitles=true" class="card text-decoration-none h-100 text-center border-info">
+                <div class="card-body">
+                    <div class="display-4 mb-3">📝</div>
+                    <h5 class="card-title">Курсы с субтитрами</h5>
+                    <p class="card-text text-muted">Текстовое сопровождение видео</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <a href="/forum/" class="card text-decoration-none h-100 text-center border-warning">
+                <div class="card-body">
+                    <div class="display-4 mb-3">💬</div>
+                    <h5 class="card-title">Форум</h5>
+                    <p class="card-text text-muted">Общение и обмен опытом</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Последние добавленные материалы -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h2>Недавно добавленные</h2>
+        </div>
+
+        <!-- Книги -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 content-card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-book"></i> Книги</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_books %}
+                        {% for book in recent_books %}
+                        <div class="mb-3">
+                            <h6><a href="{% url 'books:book_detail' book.id %}" class="text-decoration-none">{{ book.title }}</a></h6>
+                            <p class="text-muted small">{{ book.author }}</p>
+                            <div class="d-flex">
+                                {% if book.has_audio %}<span class="badge bg-info me-1">🎧 Аудио</span>{% endif %}
+                                {% if book.has_subtitles %}<span class="badge bg-secondary">📝 Субтитры</span>{% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Книги пока не добавлены.</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="/books/" class="btn btn-outline-primary btn-sm">Все книги</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Фильмы -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 content-card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-film"></i> Фильмы</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_films %}
+                        {% for film in recent_films %}
+                        <div class="mb-3">
+                            <h6><a href="/films/{{ film.id }}/" class="text-decoration-none">{{ film.title }}</a></h6>
+                            <p class="text-muted small">{{ film.director }}</p>
+                            <div class="d-flex">
+                                {% if film.has_subtitles %}<span class="badge bg-info me-1">📝 Субтитры</span>{% endif %}
+                                {% if film.has_sign_language %}<span class="badge bg-warning">🤟 Жестовый язык</span>{% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Фильмы пока не добавлены.</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="/films/" class="btn btn-outline-success btn-sm">Все фильмы</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Курсы -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 content-card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-mortarboard"></i> Курсы</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_courses %}
+                        {% for course in recent_courses %}
+                        <div class="mb-3">
+                            <h6><a href="/education/{{ course.id }}/" class="text-decoration-none">{{ course.title }}</a></h6>
+                            <p class="text-muted small">{{ course.instructor }}</p>
+                            <div class="d-flex">
+                                {% if course.has_subtitles %}<span class="badge bg-info me-1">📝 Субтитры</span>{% endif %}
+                                {% if course.has_transcript %}<span class="badge bg-secondary">📄 Транскрипт</span>{% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Курсы пока не добавлены.</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="/education/" class="btn btn-outline-info btn-sm">Все курсы</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

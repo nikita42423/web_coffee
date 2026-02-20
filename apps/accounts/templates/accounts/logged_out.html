@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Выход из системы - Access{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow text-center">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="bi bi-box-arrow-right"></i> Выход выполнен</h4>
+                </div>
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                    </div>
+
+                    <h5 class="card-title">Вы успешно вышли из системы</h5>
+                    <p class="card-text text-muted mt-3">
+                        Спасибо, что воспользовались платформой Access.<br>
+                        Надеемся увидеть вас снова!
+                    </p>
+
+                    <div class="mt-4">
+                        <a href="/accounts/login/" class="btn btn-primary me-2">
+                            <i class="bi bi-box-arrow-in-right"></i> Войти снова
+                        </a>
+                        <a href="/" class="btn btn-outline-secondary">
+                            <i class="bi bi-house"></i> На главную
+                        </a>
+                    </div>
+
+                    <div class="mt-5">
+                        <div class="alert alert-light">
+                            <h6 class="alert-heading"><i class="bi bi-lightbulb"></i> Советы по доступности</h6>
+                            <p class="mb-0 small">
+                                Не забудьте проверить настройки доступности вашего устройства для оптимального просмотра контента.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}Регистрация - Access{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-person-plus"></i> Создание аккаунта</h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4">
+                        Создайте аккаунт для доступа ко всем возможностям платформы Access.
+                        После регистрации вы сможете сохранять любимый контент, оставлять отзывы и участвовать в форуме.
+                    </p>
+
+                    <!-- Отображение ошибок формы -->
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h5 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Ошибки регистрации:</h5>
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <!-- Форма регистрации -->
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_username" class="form-label">Имя пользователя *</label>
+                                <input type="text" name="username" id="id_username" class="form-control" required>
+                                <div class="form-text">Только буквы, цифры и символы @/./+/-/_</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="id_email" class="form-label">Email *</label>
+                                <input type="email" name="email" id="id_email" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_password1" class="form-label">Пароль *</label>
+                                <input type="password" name="password1" id="id_password1" class="form-control" required>
+                                <div class="form-text">
+                                    <small>Пароль должен содержать не менее 8 символов, не быть слишком простым.</small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="id_password2" class="form-label">Подтверждение пароля *</label>
+                                <input type="password" name="password2" id="id_password2" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <!-- Дополнительные поля для доступности -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">Настройки доступности</h5>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="prefers_subtitles" id="prefers_subtitles" checked>
+                                <label class="form-check-label" for="prefers_subtitles">
+                                    Предпочитаю контент с субтитрами
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="prefers_sign_language" id="prefers_sign_language">
+                                <label class="form-check-label" for="prefers_sign_language">
+                                    Предпочитаю контент с жестовым переводом
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="prefers_audio_description" id="prefers_audio_description">
+                                <label class="form-check-label" for="prefers_audio_description">
+                                    Предпочитаю контент с аудиоописанием
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                Я соглашаюсь с <a href="#">условиями использования</a> и <a href="#">политикой конфиденциальности</a>
+                            </label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-person-plus"></i> Зарегистрироваться
+                            </button>
+                            <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-box-arrow-in-right"></i> Уже есть аккаунт? Войти
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Почему стоит зарегистрироваться?</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <i class="bi bi-bookmark-star fs-2 text-primary"></i>
+                            <h6>Сохраняйте контент</h6>
+                            <p class="text-muted small">Добавляйте книги, фильмы и курсы в избранное</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="bi bi-chat-dots fs-2 text-primary"></i>
+                            <h6>Участвуйте в обсуждениях</h6>
+                            <p class="text-muted small">Общайтесь на форуме с другими пользователями</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="bi bi-stars fs-2 text-primary"></i>
+                            <h6>Персонализированные рекомендации</h6>
+                            <p class="text-muted small">Получайте рекомендации на основе ваших предпочтений</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

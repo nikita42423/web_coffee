@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль {{ user.username }} | Access{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Профиль</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Боковая панель с информацией пользователя -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center p-4">
+                    <!-- Аватар (заглушка) -->
+                    <div class="mb-3">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-4">
+                            <i class="bi bi-person-circle fs-1 text-primary"></i>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-1">{{ user.username }}</h4>
+                    <p class="text-muted mb-3">{{ user.email|default:"Email не указан" }}</p>
+
+                    <!-- Статистика -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <div class="border rounded p-2">
+                                <div class="fw-bold">0</div>
+                                <small class="text-muted">Книг</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-2">
+                                <div class="fw-bold">0</div>
+                                <small class="text-muted">Фильмов</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-2">
+                                <div class="fw-bold">0</div>
+                                <small class="text-muted">Курсов</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Кнопки действий -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" disabled>
+                            <i class="bi bi-pencil"></i> Редактировать профиль
+                        </button>
+                        <form method="post" action="{% url 'accounts:logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-box-arrow-right"></i> Выйти
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Настройки доступности -->
+                <div class="card-footer bg-light">
+                    <h6 class="mb-3"><i class="bi bi-sliders2"></i> Настройки доступности</h6>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="prefers_subtitles" checked disabled>
+                        <label class="form-check-label" for="prefers_subtitles">
+                            Субтитры
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="prefers_sign_language" disabled>
+                        <label class="form-check-label" for="prefers_sign_language">
+                            Жестовый перевод
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="prefers_audio_description" disabled>
+                        <label class="form-check-label" for="prefers_audio_description">
+                            Аудиоописание
+                        </label>
+                    </div>
+                    <small class="text-muted d-block mt-2">Настройки будут доступны после добавления функционала профиля</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основной контент профиля -->
+        <div class="col-md-8">
+            <!-- Вкладки -->
+            <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="recent-tab" data-bs-toggle="tab" data-bs-target="#recent" type="button">
+                        <i class="bi bi-clock-history"></i> Недавнее
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="favorites-tab" data-bs-toggle="tab" data-bs-target="#favorites" type="button">
+                        <i class="bi bi-bookmark-star"></i> Избранное
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="forum-tab" data-bs-toggle="tab" data-bs-target="#forum" type="button">
+                        <i class="bi bi-chat-dots"></i> Форумы
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Содержимое вкладок -->
+            <div class="tab-content" id="profileTabsContent">
+                <!-- Вкладка "Недавнее" -->
+                <div class="tab-pane fade show active" id="recent" role="tabpanel">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Последние просмотры</h5>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> Здесь будет отображаться недавно просмотренный контент.
+                            </div>
+
+                            <!-- Пример будущего контента -->
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 bg-light">
+                                        <small class="text-muted">Книги</small>
+                                        <p class="mb-0 text-muted">Нет просмотренных книг</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 bg-light">
+                                        <small class="text-muted">Фильмы</small>
+                                        <p class="mb-0 text-muted">Нет просмотренных фильмов</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка "Избранное" -->
+                <div class="tab-pane fade" id="favorites" role="tabpanel">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Избранное</h5>
+
+                            <!-- Книги -->
+                            <div class="mb-4">
+                                <h6 class="border-bottom pb-2">
+                                    <i class="bi bi-book text-primary"></i> Книги
+                                </h6>
+                                <div class="alert alert-secondary">
+                                    <p class="mb-0 small">У вас пока нет избранных книг. Отмечайте книги ❤️, чтобы они появились здесь.</p>
+                                </div>
+                            </div>
+
+                            <!-- Фильмы -->
+                            <div class="mb-4">
+                                <h6 class="border-bottom pb-2">
+                                    <i class="bi bi-film text-success"></i> Фильмы
+                                </h6>
+                                <div class="alert alert-secondary">
+                                    <p class="mb-0 small">У вас пока нет избранных фильмов. Отмечайте фильмы ❤️, чтобы они появились здесь.</p>
+                                </div>
+                            </div>
+
+                            <!-- Курсы -->
+                            <div class="mb-4">
+                                <h6 class="border-bottom pb-2">
+                                    <i class="bi bi-mortarboard text-info"></i> Курсы
+                                </h6>
+                                <div class="alert alert-secondary">
+                                    <p class="mb-0 small">У вас пока нет избранных курсов. Отмечайте курсы ❤️, чтобы они появились здесь.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка "Форумы" -->
+                <div class="tab-pane fade" id="forum" role="tabpanel">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Активность на форуме</h5>
+
+                            <!-- Темы -->
+                            <div class="mb-4">
+                                <h6 class="border-bottom pb-2">Созданные темы</h6>
+                                <div class="alert alert-secondary">
+                                    <p class="mb-0 small">Вы ещё не создавали темы на форуме.</p>
+                                </div>
+                            </div>
+
+                            <!-- Сообщения -->
+                            <div class="mb-4">
+                                <h6 class="border-bottom pb-2">Сообщения</h6>
+                                <div class="alert alert-secondary">
+                                    <p class="mb-0 small">Вы ещё не оставляли сообщения на форуме.</p>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <a href="/forum/" class="btn btn-outline-primary">
+                                    <i class="bi bi-chat-dots"></i> Перейти на форум
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ book.title }} - {{ book.author }} | Access{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            <li class="breadcrumb-item"><a href="/books/">Книги</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ book.title|truncatechars:30 }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h3 mb-0">{{ book.title }}</h1>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5 class="text-muted">Автор: {{ book.author }}</h5>
+                        <p class="text-muted">Год публикации: {{ book.publication_year|default:"Не указан" }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4>Описание</h4>
+                        <p class="lead">{{ book.description|linebreaks }}</p>
+                    </div>
+
+                    {% if book.content %}
+                    <div class="mb-4">
+                        <h4>Содержание</h4>
+                        <div class="book-content p-3 bg-light rounded">
+                            {{ book.content|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <h4>Доступность</h4>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if book.has_audio %}
+                            <span class="badge bg-success p-2">
+                                <i class="bi bi-ear-fill"></i> Аудиоверсия доступна
+                            </span>
+                            {% endif %}
+                            {% if book.has_subtitles %}
+                            <span class="badge bg-info p-2">
+                                <i class="bi bi-text-paragraph"></i> Субтитры
+                            </span>
+                            {% endif %}
+                            {% if book.has_sign_language %}
+                            <span class="badge bg-warning p-2">
+                                <i class="bi bi-signpost-fill"></i> Перевод на жестовый язык
+                            </span>
+                            {% endif %}
+                            {% if book.has_braille %}
+                            <span class="badge bg-secondary p-2">
+                                <i class="bi bi-file-text"></i> Шрифт Брайля
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="/books/" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left"></i> К списку книг
+                        </a>
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-primary ms-2">
+                            <i class="bi bi-bookmark"></i> Добавить в избранное
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>Добавлено: {{ book.created_at|date:"d.m.Y" }}</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Информация о книге</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Категория:</span>
+                            <span>{{ book.category|default:"Не указана" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Язык:</span>
+                            <span>{{ book.language|default:"Русский" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Страниц:</span>
+                            <span>{{ book.pages|default:"-" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>ISBN:</span>
+                            <span>{{ book.isbn|default:"-" }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">Похожие книги</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Здесь будут показаны похожие книги по жанру или автору.</p>
+                    <a href="/books/?has_audio=true" class="btn btn-sm btn-outline-primary">Книги с аудио</a>
+                    <a href="/books/?has_subtitles=true" class="btn btn-sm btn-outline-info mt-2">Книги с субтитрами</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
