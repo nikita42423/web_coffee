@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Список книг | Access{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Книги</h1>
+
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Поиск и фильтры</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{% url 'books:book_search' %}">
+                        <div class="mb-3">
+                            <label class="form-label">Поиск по названию, автору, тегам</label>
+                            <input type="text" name="q" class="form-control" placeholder="Введите запрос..." value="{{ request.GET.q }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Субтитры</label>
+                            <select name="has_subtitles" class="form-select">
+                                <option value="">Все</option>
+                                <option value="true" {% if request.GET.has_subtitles == 'true' %}selected{% endif %}>Да</option>
+                                <option value="false" {% if request.GET.has_subtitles == 'false' %}selected{% endif %}>Нет</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Жестовый перевод</label>
+                            <select name="has_sign_language" class="form-select">
+                                <option value="">Все</option>
+                                <option value="true" {% if request.GET.has_sign_language == 'true' %}selected{% endif %}>Да</option>
+                                <option value="false" {% if request.GET.has_sign_language == 'false' %}selected{% endif %}>Нет</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Аудиоописание</label>
+                            <select name="has_audio_description" class="form-select">
+                                <option value="">Все</option>
+                                <option value="true" {% if request.GET.has_audio_description == 'true' %}selected{% endif %}>Да</option>
+                                <option value="false" {% if request.GET.has_audio_description == 'false' %}selected{% endif %}>Нет</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Применить фильтры</button>
+                        <a href="{% url 'books:book_list' %}" class="btn btn-outline-secondary w-100 mt-2">Сбросить всё</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for book in page_obj %}
+                    <div class="col">
+                        {% include 'books/partials/book_card.html' with book=book %}
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            Книги не найдены. Попробуйте изменить фильтры.
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if page_obj.paginator.num_pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Предыдущая</a>
+                    </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Следующая</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

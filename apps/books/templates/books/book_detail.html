@@ -7,7 +7,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/">Главная</a></li>
-            <li class="breadcrumb-item"><a href="/books/">Книги</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'books:book_list' %}">Книги</a></li>
             <li class="breadcrumb-item active" aria-current="page">{{ book.title|truncatechars:30 }}</li>
         </ol>
     </nav>
@@ -21,7 +21,7 @@
                 <div class="card-body">
                     <div class="mb-4">
                         <h5 class="text-muted">Автор: {{ book.author }}</h5>
-                        <p class="text-muted">Год публикации: {{ book.publication_year|default:"Не указан" }}</p>
+                        <p class="text-muted">Рейтинг: {{ average_rating|floatformat:1 }}</p>
                     </div>
 
                     <div class="mb-4">
@@ -41,9 +41,9 @@
                     <div class="mb-4">
                         <h4>Доступность</h4>
                         <div class="d-flex flex-wrap gap-2">
-                            {% if book.has_audio %}
+                            {% if book.has_audio_description %}
                             <span class="badge bg-success p-2">
-                                <i class="bi bi-ear-fill"></i> Аудиоверсия доступна
+                                <i class="bi bi-ear-fill"></i> Аудиоописание
                             </span>
                             {% endif %}
                             {% if book.has_subtitles %}
@@ -53,30 +53,95 @@
                             {% endif %}
                             {% if book.has_sign_language %}
                             <span class="badge bg-warning p-2">
-                                <i class="bi bi-signpost-fill"></i> Перевод на жестовый язык
-                            </span>
-                            {% endif %}
-                            {% if book.has_braille %}
-                            <span class="badge bg-secondary p-2">
-                                <i class="bi bi-file-text"></i> Шрифт Брайля
+                                <i class="bi bi-signpost-fill"></i> Жестовый перевод
                             </span>
                             {% endif %}
                         </div>
                     </div>
 
+                    <div class="mb-4">
+                        <h4>Теги</h4>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for tag in book.get_tags_list %}
+                            <span class="badge bg-secondary">{{ tag }}</span>
+                            {% empty %}
+                            <span class="text-muted">Теги не указаны</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {% if user.is_authenticated %}
                     <div class="mt-4">
-                        <a href="/books/" class="btn btn-outline-primary">
+                        <h5>Оцените книгу</h5>
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="rate">
+                            <div class="btn-group" role="group">
+                                {% for i in "12345" %}
+                                <button type="submit" name="rating" value="{{ forloop.counter }}" class="btn btn-outline-warning {% if user_rating and user_rating.value >= forloop.counter %}active{% endif %}">
+                                    {{ forloop.counter }}
+                                </button>
+                                {% endfor %}
+                            </div>
+                            <small class="text-muted ms-2">Средний рейтинг: {{ average_rating|floatformat:1 }}</small>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <a href="{% url 'books:book_list' %}" class="btn btn-outline-primary">
                             <i class="bi bi-arrow-left"></i> К списку книг
                         </a>
                         {% if user.is_authenticated %}
-                        <button class="btn btn-primary ms-2">
-                            <i class="bi bi-bookmark"></i> Добавить в избранное
-                        </button>
+                        <form method="post" class="d-inline ms-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="toggle_favorite">
+                            <button type="submit" class="btn {% if is_favorite %}btn-warning{% else %}btn-primary{% endif %}">
+                                <i class="bi bi-bookmark{% if is_favorite %}-fill{% endif %}"></i>
+                                {% if is_favorite %}Удалить из избранного{% else %}Добавить в избранное{% endif %}
+                            </button>
+                        </form>
                         {% endif %}
                     </div>
                 </div>
                 <div class="card-footer text-muted">
                     <small>Добавлено: {{ book.created_at|date:"d.m.Y" }}</small>
+                </div>
+            </div>
+
+            <div class="card shadow mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Комментарии</h5>
+                </div>
+                <div class="card-body">
+                    {% if comments %}
+                        <div class="list-group list-group-flush">
+                            {% for comment in comments %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ comment.user.username }}</h6>
+                                    <small>{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                                </div>
+                                <p class="mb-1">{{ comment.text }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Пока нет комментариев.</p>
+                    {% endif %}
+                    {% if user.is_authenticated %}
+                    <form method="post" class="mt-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="comment">
+                        <div class="mb-3">
+                            <label for="commentText" class="form-label">Добавить комментарий</label>
+                            <textarea class="form-control" id="commentText" name="text" rows="3" placeholder="Ваш комментарий..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">Отправить</button>
+                    </form>
+                    {% else %}
+                    <p class="text-muted small">Войдите, чтобы оставить комментарий.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -89,20 +154,20 @@
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between">
-                            <span>Категория:</span>
-                            <span>{{ book.category|default:"Не указана" }}</span>
+                            <span>Рейтинг:</span>
+                            <span>{{ average_rating|floatformat:1 }} (оценок: {{ book.ratings.count }})</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
-                            <span>Язык:</span>
-                            <span>{{ book.language|default:"Русский" }}</span>
+                            <span>Субтитры:</span>
+                            <span>{% if book.has_subtitles %}Да{% else %}Нет{% endif %}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
-                            <span>Страниц:</span>
-                            <span>{{ book.pages|default:"-" }}</span>
+                            <span>Жестовый перевод:</span>
+                            <span>{% if book.has_sign_language %}Да{% else %}Нет{% endif %}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
-                            <span>ISBN:</span>
-                            <span>{{ book.isbn|default:"-" }}</span>
+                            <span>Аудиоописание:</span>
+                            <span>{% if book.has_audio_description %}Да{% else %}Нет{% endif %}</span>
                         </li>
                     </ul>
                 </div>
@@ -114,8 +179,9 @@
                 </div>
                 <div class="card-body">
                     <p class="text-muted">Здесь будут показаны похожие книги по жанру или автору.</p>
-                    <a href="/books/?has_audio=true" class="btn btn-sm btn-outline-primary">Книги с аудио</a>
-                    <a href="/books/?has_subtitles=true" class="btn btn-sm btn-outline-info">Книги с субтитрами</a>
+                    <a href="{% url 'books:book_by_accessibility' %}?has_subtitles=true" class="btn btn-sm btn-outline-info">Книги с субтитрами</a>
+                    <a href="{% url 'books:book_by_accessibility' %}?has_sign_language=true" class="btn btn-sm btn-outline-warning">Книги с жестовым переводом</a>
+                    <a href="{% url 'books:book_by_accessibility' %}?has_audio_description=true" class="btn btn-sm btn-outline-success mt-1">Книги с аудиоописанием</a>
                 </div>
             </div>
         </div>

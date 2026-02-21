@@ -151,9 +151,24 @@
                                 <h6 class="border-bottom pb-2">
                                     <i class="bi bi-book text-primary"></i> Книги
                                 </h6>
-                                <div class="alert alert-secondary">
-                                    <p class="mb-0 small">У вас пока нет избранных книг. Отмечайте книги ❤️, чтобы они появились здесь.</p>
-                                </div>
+                                {% if favorite_books %}
+                                    <div class="list-group">
+                                        {% for favorite in favorite_books %}
+                                        <a href="{% url 'books:book_detail' favorite.book.id %}" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">{{ favorite.book.title }}</h6>
+                                                <small>{{ favorite.created_at|date:"d.m.Y" }}</small>
+                                            </div>
+                                            <p class="mb-1 text-muted">{{ favorite.book.author }}</p>
+                                            <small class="text-muted">Добавлено в избранное</small>
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-secondary">
+                                        <p class="mb-0 small">У вас пока нет избранных книг. Отмечайте книги ❤️, чтобы они появились здесь.</p>
+                                    </div>
+                                {% endif %}
                             </div>
 
                             <!-- Фильмы -->

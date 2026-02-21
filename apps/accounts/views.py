@@ -35,3 +35,10 @@ class CustomLogoutView(LogoutView):
 # Профиль
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'accounts/profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from apps.books.models import Favorite
+        favorite_books = Favorite.objects.filter(user=self.request.user).select_related('book')
+        context['favorite_books'] = favorite_books
+        return context
