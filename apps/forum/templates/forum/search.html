@@ -1,0 +1,231 @@
+{% extends 'forum/base_forum.html' %}
+{% load static %}
+
+{% block title %}Поиск по форуму{% endblock %}
+
+{% block extra_breadcrumbs %}
+» <a href="{% url 'forum:search' %}">Поиск</a>
+{% endblock %}
+
+{% block forum_content %}
+<div class="search-page">
+    <h1>🔍 Поиск по форуму</h1>
+    
+    <form method="get" class="search-form">
+        <div class="search-box">
+            <input type="text" name="q" placeholder="Введите поисковый запрос..." 
+                   value="{{ query|default:'' }}" autofocus>
+            <button type="submit" class="btn btn-primary">Найти</button>
+        </div>
+    </form>
+    
+    {% if query %}
+        <div class="search-results-header">
+            <h2>Результаты поиска для "{{ query }}"</h2>
+            <p>Найдено: {{ topics|length }} тем</p>
+        </div>
+        
+        {% if topics %}
+        <div class="search-results">
+            {% for topic in topics %}
+            <div class="search-result-item">
+                <div class="result-icon">
+                    {% if topic.is_pinned %}📌{% else %}💬{% endif %}
+                </div>
+                <div class="result-content">
+                    <h3>
+                        <a href="{% url 'forum:topic' topic.id %}">{{ topic.title }}</a>
+                        {% if topic.is_closed %}
+                            <span class="closed-badge">🔒</span>
+                        {% endif %}
+                    </h3>
+                    
+                    <div class="result-meta">
+                        <span>📌 <a href="{% url 'forum:category' topic.category.slug %}">{{ topic.category.name }}</a></span>
+                        <span>👤 <a href="{% url 'accounts:profile' %}?user={{ topic.author.username }}">{{ topic.author.username }}</a></span>
+                        <span>📅 {{ topic.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    
+                    <div class="result-excerpt">
+                        {{ topic.content|truncatechars:200 }}
+                    </div>
+                    
+                    <div class="result-stats">
+                        <span>👁 {{ topic.views }}</span>
+                        <span>💬 {{ topic.posts_count }}</span>
+                        <span>🕒 {{ topic.updated_at|timesince }} назад</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-results">
+            <p>😕 По вашему запросу ничего не найдено</p>
+            <p>Попробуйте изменить поисковый запрос или выбрать другие ключевые слова</p>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+<style>
+.search-page {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.search-form {
+    margin: 30px 0;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1.1em;
+    transition: all 0.3s;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+}
+
+.search-box button {
+    padding: 0 30px;
+    font-size: 1.1em;
+}
+
+.search-results-header {
+    margin: 30px 0 20px;
+}
+
+.search-results-header h2 {
+    color: var(--dark-bg);
+    margin: 0 0 5px 0;
+}
+
+.search-results-header p {
+    color: var(--secondary-color);
+    margin: 0;
+}
+
+.search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.search-result-item {
+    display: flex;
+    gap: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s;
+}
+
+.search-result-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--primary-color);
+}
+
+.result-icon {
+    font-size: 2em;
+    color: var(--primary-color);
+}
+
+.result-content {
+    flex: 1;
+}
+
+.result-content h3 {
+    margin: 0 0 10px 0;
+}
+
+.result-content h3 a {
+    color: var(--dark-bg);
+    text-decoration: none;
+    font-size: 1.2em;
+}
+
+.result-content h3 a:hover {
+    color: var(--primary-color);
+}
+
+.closed-badge {
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+
+.result-meta {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    color: var(--secondary-color);
+    flex-wrap: wrap;
+}
+
+.result-meta a {
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+
+.result-meta a:hover {
+    color: var(--primary-color);
+}
+
+.result-excerpt {
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+    padding: 10px;
+    background: var(--light-bg);
+    border-radius: 4px;
+}
+
+.result-stats {
+    display: flex;
+    gap: 20px;
+    font-size: 0.9em;
+    color: var(--secondary-color);
+}
+
+.no-results {
+    text-align: center;
+    padding: 60px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.no-results p {
+    color: var(--secondary-color);
+    font-size: 1.1em;
+}
+
+@media (max-width: 768px) {
+    .search-box {
+        flex-direction: column;
+    }
+    
+    .search-result-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .result-icon {
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

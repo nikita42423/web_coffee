@@ -1,0 +1,351 @@
+{% extends 'forum/base_forum.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Форум{% endblock %}
+
+{% block extra_breadcrumbs %}
+» <a href="{% url 'forum:category' category.slug %}">{{ category.name }}</a>
+{% endblock %}
+
+{% block forum_content %}
+<div class="category-page">
+    <!-- Заголовок категории -->
+    <div class="category-header-large">
+        <div class="category-icon-large">{{ category.icon }}</div>
+        <div class="category-info">
+            <h1>{{ category.name }}</h1>
+            {% if category.description %}
+                <p class="category-description-large">{{ category.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Панель действий -->
+    <div class="category-actions">
+        <div class="action-buttons">
+            {% if user.is_authenticated %}
+                <a href="{% url 'forum:create_topic' %}?category={{ category.id }}" class="btn btn-primary">
+                    ✏️ Создать тему
+                </a>
+            {% endif %}
+        </div>
+        
+        <!-- Поиск по категории -->
+        <form method="get" class="category-search">
+            <input type="text" name="q" placeholder="Поиск в категории..." value="{{ query|default:'' }}">
+            <button type="submit" class="btn btn-secondary">🔍 Найти</button>
+            {% if query %}
+                <a href="{% url 'forum:category' category.slug %}" class="btn btn-secondary">✖ Сбросить</a>
+            {% endif %}
+        </form>
+    </div>
+    
+    <!-- Список тем -->
+    {% if topics %}
+    <div class="topics-list">
+        <div class="topics-header">
+            <div class="topic-col">Тема</div>
+            <div class="stats-col">Статистика</div>
+            <div class="last-post-col">Последнее сообщение</div>
+        </div>
+        
+        {% for topic in topics %}
+        <div class="topic-item {% if topic.is_pinned %}pinned{% endif %} {% if topic.is_closed %}closed{% endif %}">
+            <div class="topic-main">
+                <div class="topic-status">
+                    {% if topic.is_pinned %}
+                        <span class="status-icon" title="Закрепленная тема">📌</span>
+                    {% elif topic.is_closed %}
+                        <span class="status-icon" title="Тема закрыта">🔒</span>
+                    {% else %}
+                        <span class="status-icon" title="Обычная тема">💬</span>
+                    {% endif %}
+                </div>
+                <div class="topic-content">
+                    <h3>
+                        <a href="{% url 'forum:topic' topic.id %}">{{ topic.title }}</a>
+                        {% if topic.posts_count > 10 %}
+                            <span class="hot-badge">🔥</span>
+                        {% endif %}
+                    </h3>
+                    <div class="topic-meta">
+                        <span>👤 <a href="{% url 'accounts:profile' %}?user={{ topic.author.username }}">{{ topic.author.username }}</a></span>
+                        <span>📅 {{ topic.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="topic-stats">
+                <div class="stat">
+                    <span class="stat-value">{{ topic.views }}</span>
+                    <span class="stat-label">просмотров</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">{{ topic.posts_count }}</span>
+                    <span class="stat-label">ответов</span>
+                </div>
+            </div>
+            
+            <div class="topic-last-post">
+                {% with last_post=topic.posts.last %}
+                    {% if last_post %}
+                        <span>👤 {{ last_post.author.username }}</span>
+                        <span>🕒 {{ last_post.created_at|timesince }} назад</span>
+                    {% else %}
+                        <span class="no-posts">Нет ответов</span>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Пагинация -->
+    {% if topics.has_other_pages %}
+    <div class="pagination">
+        {% if topics.has_previous %}
+            <a href="?page=1{% if query %}&q={{ query }}{% endif %}" class="page-link">&laquo;</a>
+            <a href="?page={{ topics.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="page-link">‹</a>
+        {% endif %}
+        
+        <span class="page-link current">{{ topics.number }}</span>
+        
+        {% if topics.has_next %}
+            <a href="?page={{ topics.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="page-link">›</a>
+            <a href="?page={{ topics.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}" class="page-link">&raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="no-topics">
+        <p>😕 В этой категории пока нет тем</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'forum:create_topic' %}?category={{ category.id }}" class="btn btn-primary">
+                Создать первую тему
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.category-header-large {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.category-icon-large {
+    font-size: 3em;
+    background: var(--light-bg);
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+}
+
+.category-info h1 {
+    margin: 0 0 10px 0;
+    color: var(--dark-bg);
+}
+
+.category-description-large {
+    color: var(--secondary-color);
+    font-size: 1.1em;
+    margin: 0;
+}
+
+.category-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.category-search {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.category-search input {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    min-width: 250px;
+}
+
+.topics-list {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.topics-header {
+    display: grid;
+    grid-template-columns: 1fr 200px 200px;
+    padding: 12px 20px;
+    background: var(--light-bg);
+    font-weight: bold;
+    color: var(--secondary-color);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.topic-item {
+    display: grid;
+    grid-template-columns: 1fr 200px 200px;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.3s;
+}
+
+.topic-item:hover {
+    background: var(--light-bg);
+}
+
+.topic-item.pinned {
+    background: #fff9e6;
+}
+
+.topic-item.closed {
+    opacity: 0.7;
+}
+
+.topic-main {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.status-icon {
+    font-size: 1.2em;
+}
+
+.topic-content h3 {
+    margin: 0 0 5px 0;
+}
+
+.topic-content h3 a {
+    color: var(--dark-bg);
+    text-decoration: none;
+}
+
+.topic-content h3 a:hover {
+    color: var(--primary-color);
+}
+
+.hot-badge {
+    margin-left: 5px;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.topic-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85em;
+    color: var(--secondary-color);
+}
+
+.topic-meta a {
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+
+.topic-meta a:hover {
+    color: var(--primary-color);
+}
+
+.topic-stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-weight: bold;
+    color: var(--dark-bg);
+}
+
+.stat-label {
+    font-size: 0.8em;
+    color: var(--secondary-color);
+}
+
+.topic-last-post {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.9em;
+    color: var(--secondary-color);
+}
+
+.no-posts {
+    color: var(--secondary-color);
+    font-style: italic;
+}
+
+.no-topics {
+    text-align: center;
+    padding: 60px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.no-topics p {
+    font-size: 1.2em;
+    color: var(--secondary-color);
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .topics-header {
+        display: none;
+    }
+    
+    .topic-item {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .category-header-large {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .category-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .category-search {
+        flex-direction: column;
+    }
+    
+    .topic-stats {
+        justify-content: space-around;
+    }
+}
+</style>
+{% endblock %}

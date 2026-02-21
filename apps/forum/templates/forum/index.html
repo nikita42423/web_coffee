@@ -1,0 +1,291 @@
+{% extends 'forum/base_forum.html' %}
+{% load static %}
+
+{% block title %}Главная форума{% endblock %}
+
+{% block forum_content %}
+<!-- Статистика -->
+<div class="forum-stats">
+    <div class="stat-item">
+        <span class="stat-value">{{ total_topics }}</span>
+        <span class="stat-label">Тем</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-value">{{ total_posts }}</span>
+        <span class="stat-label">Сообщений</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-value">{{ total_users }}</span>
+        <span class="stat-label">Участников</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-value">{{ recent_topics|length }}</span>
+        <span class="stat-label">Активных тем</span>
+    </div>
+</div>
+
+<!-- Категории форума -->
+<h2 class="section-title">📋 Категории форума</h2>
+
+<div class="categories-list">
+    {% for category in categories %}
+    <div class="category-card">
+        <div class="category-header">
+            <span class="category-icon">{{ category.icon }}</span>
+            <h3>
+                <a href="{% url 'forum:category' category.slug %}">{{ category.name }}</a>
+            </h3>
+            {% if category.description %}
+                <p class="category-description">{{ category.description }}</p>
+            {% endif %}
+        </div>
+        
+        {% if category.children.all %}
+        <div class="subcategories">
+            {% for sub in category.children.all %}
+                <a href="{% url 'forum:category' sub.slug %}" class="subcategory-link">
+                    {{ sub.icon }} {{ sub.name }}
+                </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="category-stats">
+            <span>📌 {{ category.topics_count }} тем</span>
+            <span>💬 {{ category.posts_count }} сообщений</span>
+        </div>
+    </div>
+    {% empty %}
+    <p class="no-categories">Категории пока не созданы</p>
+    {% endfor %}
+</div>
+
+<!-- Последние темы -->
+{% if recent_topics %}
+<h2 class="section-title">🆕 Последние обсуждения</h2>
+
+<div class="recent-topics">
+    {% for topic in recent_topics %}
+    <div class="topic-row {% if topic.is_pinned %}pinned{% endif %}">
+        <div class="topic-info">
+            <span class="topic-icon">
+                {% if topic.is_pinned %}📌{% else %}💬{% endif %}
+            </span>
+            <div class="topic-details">
+                <h4>
+                    <a href="{% url 'forum:topic' topic.id %}">{{ topic.title }}</a>
+                    {% if topic.is_closed %}<span class="closed-badge">🔒</span>{% endif %}
+                </h4>
+                <div class="topic-meta">
+                    <span>📌 <a href="{% url 'forum:category' topic.category.slug %}">{{ topic.category.name }}</a></span>
+                    <span>👤 <a href="{% url 'accounts:profile' %}?user={{ topic.author.username }}">{{ topic.author.username }}</a></span>
+                    <span>📅 {{ topic.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="topic-stats">
+            <span>👁 {{ topic.views }}</span>
+            <span>💬 {{ topic.posts_count }}</span>
+            <span>🕒 {{ topic.updated_at|timesince }} назад</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<style>
+.categories-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+.category-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.category-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.category-icon {
+    font-size: 2em;
+    background: var(--light-bg);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+.category-header h3 {
+    margin: 0;
+    flex: 1;
+}
+
+.category-header h3 a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.category-header h3 a:hover {
+    text-decoration: underline;
+}
+
+.category-description {
+    color: var(--secondary-color);
+    font-size: 0.95em;
+    margin: 0;
+    width: 100%;
+}
+
+.subcategories {
+    margin: 10px 0 15px;
+    padding: 10px 0;
+    border-top: 1px dashed var(--border-color);
+    border-bottom: 1px dashed var(--border-color);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.subcategory-link {
+    background: var(--light-bg);
+    padding: 5px 12px;
+    border-radius: 20px;
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: all 0.3s;
+}
+
+.subcategory-link:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.category-stats {
+    display: flex;
+    gap: 20px;
+    color: var(--secondary-color);
+    font-size: 0.9em;
+}
+
+.recent-topics {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.topic-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.3s;
+}
+
+.topic-row:last-child {
+    border-bottom: none;
+}
+
+.topic-row:hover {
+    background: var(--light-bg);
+}
+
+.topic-row.pinned {
+    background: #fff9e6;
+}
+
+.topic-info {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    flex: 1;
+}
+
+.topic-icon {
+    font-size: 1.2em;
+    color: var(--secondary-color);
+}
+
+.topic-details h4 {
+    margin: 0 0 5px 0;
+}
+
+.topic-details h4 a {
+    color: var(--dark-bg);
+    text-decoration: none;
+    font-size: 1.1em;
+}
+
+.topic-details h4 a:hover {
+    color: var(--primary-color);
+}
+
+.closed-badge {
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+
+.topic-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85em;
+    color: var(--secondary-color);
+}
+
+.topic-meta a {
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+
+.topic-meta a:hover {
+    color: var(--primary-color);
+}
+
+.topic-stats {
+    display: flex;
+    gap: 20px;
+    color: var(--secondary-color);
+    font-size: 0.9em;
+    min-width: 150px;
+    justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+    .topic-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .topic-stats {
+        justify-content: flex-start;
+        width: 100%;
+    }
+    
+    .category-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}

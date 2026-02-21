@@ -1,0 +1,493 @@
+{% extends 'forum/base_forum.html' %}
+{% load static %}
+
+{% block title %}{{ topic.title }} - Форум{% endblock %}
+
+{% block extra_breadcrumbs %}
+» <a href="{% url 'forum:category' topic.category.slug %}">{{ topic.category.name }}</a>
+» {{ topic.title|truncatechars:50 }}
+{% endblock %}
+
+{% block forum_content %}
+<div class="topic-page">
+    <!-- Заголовок темы -->
+    <div class="topic-header">
+        <div class="topic-title-section">
+            <h1>{{ topic.title }}</h1>
+            <div class="topic-status-badges">
+                {% if topic.is_pinned %}
+                    <span class="badge badge-pinned">📌 Закреплено</span>
+                {% endif %}
+                {% if topic.is_closed %}
+                    <span class="badge badge-closed">🔒 Закрыто</span>
+                {% endif %}
+                {% if topic.views > 100 %}
+                    <span class="badge badge-hot">🔥 Горячая тема</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="topic-actions">
+            {% if user.is_authenticated and not topic.is_closed %}
+                <button class="btn btn-primary" onclick="showReplyForm()">
+                    💬 Ответить
+                </button>
+            {% endif %}
+            {% if user == topic.author or user.is_staff %}
+                {% with first_post=topic.posts.first %}
+                    {% if first_post %}
+                    <a href="{% url 'forum:edit_post' first_post.id %}" class="btn btn-secondary">
+                    ✏️ Редактировать
+                    </a>
+                    {% endif %}
+                {% endwith %}
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Информация о теме -->
+    <div class="topic-info-bar">
+        <span>👤 Автор: <a href="{% url 'accounts:profile' %}?user={{ topic.author.username }}">{{ topic.author.username }}</a></span>
+        <span>📅 Создано: {{ topic.created_at|date:"d.m.Y H:i" }}</span>
+        <span>👁 Просмотров: {{ topic.views }}</span>
+        <span>💬 Ответов: {{ topic.posts_count }}</span>
+        <span>🕒 Обновлено: {{ topic.updated_at|timesince }} назад</span>
+    </div>
+    
+    <!-- Сообщения -->
+    <div class="posts-list">
+        {% for post in posts %}
+        <div class="post-item" id="post-{{ post.id }}">
+            <div class="post-sidebar">
+                <div class="post-author-info">
+                    <div class="author-avatar">
+                        {% if post.author.forum_profile.avatar %}
+                            <img src="{{ post.author.forum_profile.avatar.url }}" alt="Avatar">
+                        {% else %}
+                            <div class="default-avatar">
+                                {{ post.author.username|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="author-name">
+                        <a href="{% url 'accounts:profile' %}?user={{ post.author.username }}">
+                            {{ post.author.username }}
+                        </a>
+                    </div>
+                    <div class="author-stats">
+                        <span>Сообщений: {{ post.author.forum_posts.count }}</span>
+                        <span>Тем: {{ post.author.forum_topics.count }}</span>
+                    </div>
+                    <div class="author-joined">
+                        На сайте с {{ post.author.date_joined|date:"d.m.Y" }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="post-content">
+                <div class="post-header">
+                    <span class="post-date">#{{ forloop.counter }} • {{ post.created_at|date:"d.m.Y H:i" }}</span>
+                    {% if post.created_at != post.updated_at %}
+                        <span class="post-edited">(отредактировано {{ post.updated_at|timesince }} назад)</span>
+                    {% endif %}
+                </div>
+                
+                <div class="post-body">
+                    {{ post.content|linebreaks }}
+                </div>
+                
+                {% if post.parent %}
+                <div class="post-quote">
+                    <div class="quote-header">
+                        <span>📝 Ответ на сообщение от {{ post.parent.author.username }}</span>
+                    </div>
+                    <div class="quote-body">
+                        {{ post.parent.content|truncatechars:200 }}
+                    </div>
+                    <a href="#post-{{ post.parent.id }}" class="quote-link">Перейти к сообщению →</a>
+                </div>
+                {% endif %}
+                
+                <div class="post-footer">
+                    <div class="post-actions">
+                        {% if user.is_authenticated and not topic.is_closed %}
+                            <button class="btn-link" onclick="quotePost({{ post.id }}, '{{ post.author.username }}')">
+                                💬 Цитировать
+                            </button>
+                        {% endif %}
+                        {% if user == post.author or user.is_staff %}
+                            <a href="{% url 'forum:edit_post' post.id %}" class="btn-link">✏️ Редактировать</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Пагинация -->
+    {% if posts.has_other_pages %}
+    <div class="pagination">
+        {% if posts.has_previous %}
+            <a href="?page=1" class="page-link">&laquo;</a>
+            <a href="?page={{ posts.previous_page_number }}" class="page-link">‹</a>
+        {% endif %}
+        
+        {% for i in posts.paginator.page_range %}
+            {% if posts.number == i %}
+                <span class="page-link current">{{ i }}</span>
+            {% elif i > posts.number|add:'-3' and i < posts.number|add:'3' %}
+                <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if posts.has_next %}
+            <a href="?page={{ posts.next_page_number }}" class="page-link">›</a>
+            <a href="?page={{ posts.paginator.num_pages }}" class="page-link">&raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Форма ответа -->
+    {% if user.is_authenticated and not topic.is_closed %}
+    <div class="reply-section" id="reply-form" style="display: none;">
+        <h3>Добавить ответ</h3>
+        <form method="post" action="{% url 'forum:create_post' topic.id %}" class="reply-form">
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" id="parent_id" value="">
+            <div class="form-group">
+                <textarea name="content" id="content" rows="8" required 
+                          placeholder="Напишите ваш ответ..."></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Отправить</button>
+                <button type="button" class="btn btn-secondary" onclick="hideReplyForm()">Отмена</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+    
+    <!-- Сообщение для неавторизованных -->
+    {% if not user.is_authenticated %}
+    <div class="login-prompt">
+        <p>Чтобы оставить ответ, <a href="{% url 'accounts:login' %}?next={{ request.path }}">войдите</a> 
+           или <a href="{% url 'accounts:register' %}">зарегистрируйтесь</a>.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.topic-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.topic-title-section h1 {
+    margin: 0 0 10px 0;
+    color: var(--dark-bg);
+}
+
+.topic-status-badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: normal;
+}
+
+.badge-pinned {
+    background: #fff9e6;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.badge-closed {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.badge-hot {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.topic-info-bar {
+    display: flex;
+    gap: 20px;
+    padding: 15px;
+    background: var(--light-bg);
+    border-radius: 4px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    font-size: 0.95em;
+    color: var(--secondary-color);
+}
+
+.topic-info-bar a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.posts-list {
+    margin-bottom: 30px;
+}
+
+.post-item {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.post-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.post-sidebar {
+    background: var(--light-bg);
+    padding: 20px;
+    border-right: 1px solid var(--border-color);
+}
+
+.post-author-info {
+    text-align: center;
+}
+
+.author-avatar {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.default-avatar {
+    width: 100px;
+    height: 100px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5em;
+    font-weight: bold;
+}
+
+.author-name {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.author-name a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.author-stats {
+    font-size: 0.85em;
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+}
+
+.author-stats span {
+    display: block;
+    margin: 3px 0;
+}
+
+.author-joined {
+    font-size: 0.8em;
+    color: var(--secondary-color);
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.post-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.post-header {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--secondary-color);
+    font-size: 0.9em;
+}
+
+.post-edited {
+    font-style: italic;
+    margin-left: 10px;
+}
+
+.post-body {
+    flex: 1;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.post-quote {
+    background: var(--light-bg);
+    border-left: 3px solid var(--primary-color);
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
+
+.quote-header {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.quote-body {
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
+.quote-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.post-footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+}
+
+.post-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.9em;
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    color: var(--primary-color);
+}
+
+.reply-section {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-top: 30px;
+}
+
+.reply-form textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1em;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.login-prompt {
+    text-align: center;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.login-prompt a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .post-item {
+        grid-template-columns: 1fr;
+    }
+    
+    .post-sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .topic-info-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .topic-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+
+<script>
+function showReplyForm() {
+    document.getElementById('reply-form').style.display = 'block';
+    window.location.hash = 'reply-form';
+}
+
+function hideReplyForm() {
+    document.getElementById('reply-form').style.display = 'none';
+    document.getElementById('parent_id').value = '';
+    document.getElementById('content').value = '';
+}
+
+function quotePost(postId, username) {
+    // Здесь можно добавить логику цитирования
+    // Например, получить текст цитируемого сообщения через AJAX
+    showReplyForm();
+    document.getElementById('parent_id').value = postId;
+    document.getElementById('content').value = `> ${username} написал:\n> \n`;
+}
+
+// Плавная прокрутка к сообщению из URL
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.hash) {
+        const element = document.querySelector(window.location.hash);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+            element.style.backgroundColor = '#fff9e6';
+            setTimeout(() => {
+                element.style.backgroundColor = '';
+            }, 2000);
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends 'forum/base_forum.html' %}
+{% load static %}
+
+{% block title %}Редактирование сообщения{% endblock %}
+
+{% block extra_breadcrumbs %}
+» <a href="{% url 'forum:category' post.topic.category.slug %}">{{ post.topic.category.name }}</a>
+» <a href="{% url 'forum:topic' post.topic.id %}">{{ post.topic.title|truncatechars:50 }}</a>
+» Редактирование
+{% endblock %}
+
+{% block forum_content %}
+<div class="edit-post-page">
+    <h1>✏️ Редактирование сообщения</h1>
+    
+    <div class="post-info">
+        <p>Тема: <a href="{% url 'forum:topic' post.topic.id %}">{{ post.topic.title }}</a></p>
+        <p>Автор: {{ post.author.username }}</p>
+        <p>Создано: {{ post.created_at|date:"d.m.Y H:i" }}</p>
+        {% if post.created_at != post.updated_at %}
+            <p>Последнее редактирование: {{ post.updated_at|date:"d.m.Y H:i" }}</p>
+        {% endif %}
+    </div>
+    
+    <form method="post" class="edit-post-form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="content">Сообщение:</label>
+            <textarea name="content" id="content" rows="12" required class="form-control">{{ post.content }}</textarea>
+        </div>
+        
+        <div class="form-info">
+            <p>💡 При редактировании сообщения другие пользователи увидят отметку о том, что оно было изменено.</p>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                💾 Сохранить изменения
+            </button>
+            <a href="{{ post.get_absolute_url }}" class="btn btn-secondary">
+                Отмена
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+.edit-post-page {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.post-info {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.post-info p {
+    margin: 5px 0;
+    color: var(--secondary-color);
+}
+
+.post-info a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.edit-post-form {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--dark-bg);
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1em;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+}
+
+.form-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 25px;
+    border-left: 4px solid var(--info-color);
+}
+
+.form-info p {
+    margin: 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+    .edit-post-form {
+        padding: 20px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
