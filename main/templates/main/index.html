@@ -53,7 +53,7 @@
             <h2 class="text-center">Популярные категории</h2>
         </div>
         <div class="col-md-3 col-sm-6 mb-3">
-            <a href="/books/?has_audio=true" class="card text-decoration-none h-100 text-center border-primary">
+            <a href="{% url 'books:book_by_accessibility' %}?has_audio_description=true" class="card text-decoration-none h-100 text-center border-primary">
                 <div class="card-body">
                     <div class="display-4 mb-3">🎧</div>
                     <h5 class="card-title">Книги с аудио</h5>
@@ -105,12 +105,14 @@
                 <div class="card-body">
                     {% if recent_books %}
                         {% for book in recent_books %}
-                        <div class="mb-3">
-                            <h6><a href="{% url 'books:book_detail' book.id %}" class="text-decoration-none">{{ book.title }}</a></h6>
-                            <p class="text-muted small">{{ book.author }}</p>
-                            <div class="d-flex">
-                                {% if book.has_audio %}<span class="badge bg-info me-1">🎧 Аудио</span>{% endif %}
-                                {% if book.has_subtitles %}<span class="badge bg-secondary">📝 Субтитры</span>{% endif %}
+                        <div class="card text-decoration-none border-primary mt-2">
+                            <div class="card-body">
+                                <h6><a href="{% url 'books:book_detail' book.id %}" class="text-decoration-none">{{ book.title }}</a></h6>
+                                <p class="text-muted small">{{ book.author }}</p>
+                                <div class="d-flex">
+                                    {% if book.has_audio_description %}<span class="badge bg-info me-1">🎧 Аудио</span>{% endif %}
+                                    {% if book.has_subtitles %}<span class="badge bg-secondary">📝 Субтитры</span>{% endif %}
+                                </div>
                             </div>
                         </div>
                         {% endfor %}

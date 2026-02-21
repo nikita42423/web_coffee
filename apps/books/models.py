@@ -31,3 +31,50 @@ class Book(models.Model):
         if self.tags:
             return [tag.strip() for tag in self.tags.split(',')]
         return []
+
+
+class Rating(models.Model):
+    """Оценка книги пользователем от 1 до 5"""
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='ratings')
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    value = models.IntegerField('Оценка', choices=[(i, str(i)) for i in range(1, 6)])
+    created_at = models.DateTimeField('Дата оценки', auto_now_add=True)
+
+    class Meta:
+        unique_together = ('book', 'user')
+        verbose_name = 'Оценка'
+        verbose_name_plural = 'Оценки'
+
+    def __str__(self):
+        return f'{self.user.username} - {self.book.title}: {self.value}'
+
+
+class Comment(models.Model):
+    """Комментарий к книге"""
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    text = models.TextField('Текст комментария')
+    created_at = models.DateTimeField('Дата комментария', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.username} - {self.book.title}'
+
+
+class Favorite(models.Model):
+    """Избранное (лайк) книги пользователем"""
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='favorites')
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    created_at = models.DateTimeField('Дата добавления', auto_now_add=True)
+
+    class Meta:
+        unique_together = ('book', 'user')
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+
+    def __str__(self):
+        return f'{self.user.username} - {self.book.title}'
