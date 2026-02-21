@@ -44,3 +44,27 @@ class Course(models.Model):
         if self.tags:
             return [tag.strip() for tag in self.tags.split(',')]
         return []
+
+    def update_rating(self):
+        """Пересчитать средний рейтинг на основе отзывов"""
+        reviews = self.reviews.all()
+        if reviews:
+            self.rating = sum(review.rating for review in reviews) / reviews.count()
+            self.save(update_fields=['rating'])
+
+
+class Review(models.Model):
+    """Отзыв и оценка курса"""
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='education_reviews')
+    rating = models.IntegerField('Оценка', choices=[(i, str(i)) for i in range(1, 6)])
+    comment = models.TextField('Комментарий', blank=True)
+    created_at = models.DateTimeField('Дата добавления', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+        unique_together = ('course', 'user')  # один пользователь — одна оценка на курс
+
+    def __str__(self):
+        return f'{self.user.username} — {self.course.title}: {self.rating}'

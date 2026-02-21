@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Курсы | Access{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Образовательные курсы</h1>
+    <p class="lead">Подборка курсов с субтитрами, жестовым переводом и другими форматами доступности.</p>
+
+    <div class="row">
+        <div class="col-lg-3">
+            <!-- Фильтры -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Фильтры</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action=".">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Уровень сложности</label>
+                            <div class="list-group">
+                                <a href="?level=beginner" class="list-group-item list-group-item-action {% if level_filter == 'beginner' %}active{% endif %}">
+                                    Начальный
+                                </a>
+                                <a href="?level=intermediate" class="list-group-item list-group-item-action {% if level_filter == 'intermediate' %}active{% endif %}">
+                                    Средний
+                                </a>
+                                <a href="?level=advanced" class="list-group-item list-group-item-action {% if level_filter == 'advanced' %}active{% endif %}">
+                                    Продвинутый
+                                </a>
+                                <a href="?" class="list-group-item list-group-item-action {% if not level_filter %}active{% endif %}">
+                                    Все уровни
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Доступность</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="has_subtitles" id="subtitles" {% if request.GET.has_subtitles == 'on' %}checked{% endif %}>
+                                <label class="form-check-label" for="subtitles">
+                                    Субтитры
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="has_sign_language" id="sign" {% if request.GET.has_sign_language == 'on' %}checked{% endif %}>
+                                <label class="form-check-label" for="sign">
+                                    Жестовый перевод
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="has_audio_description" id="audio" {% if request.GET.has_audio_description == 'on' %}checked{% endif %}>
+                                <label class="form-check-label" for="audio">
+                                    Аудиоописание
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="has_transcript" id="transcript" {% if request.GET.has_transcript == 'on' %}checked{% endif %}>
+                                <label class="form-check-label" for="transcript">
+                                    Текстовая расшифровка
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Применить фильтры</button>
+                        <a href="?" class="btn btn-outline-secondary w-100 mt-2">Сбросить</a>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-body">
+                    <h6>Всего курсов: {{ total_courses }}</h6>
+                    <p class="small text-muted">Используйте фильтры для уточнения результатов.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <!-- Список курсов -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for course in page_obj %}
+                <div class="col">
+                    {% include 'education/partials/course_card.html' with course=course %}
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> По выбранным фильтрам курсы не найдены.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Пагинация -->
+            {% if page_obj.paginator.num_pages > 1 %}
+            <nav aria-label="Навигация по страницам" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if level_filter %}&level={{ level_filter }}{% endif %}">Назад</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if num == page_obj.number %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if level_filter %}&level={{ level_filter }}{% endif %}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if level_filter %}&level={{ level_filter }}{% endif %}">Вперёд</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

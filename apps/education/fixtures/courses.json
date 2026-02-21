@@ -1,0 +1,62 @@
+[
+  {
+    "model": "education.course",
+    "pk": 1,
+    "fields": {
+      "title": "Python для начинающих",
+      "instructor": "Иван Петров",
+      "description": "Полный курс по Python для начинающих. Изучите основы программирования, функции, классы и работу с данными. Все уроки сопровождаются субтитрами и текстовыми расшифровками.",
+      "duration_hours": 25,
+      "has_subtitles": true,
+      "has_sign_language": false,
+      "has_audio_description": true,
+      "has_transcript": true,
+      "tags": "python, программирование, основы",
+      "rating": 4.5,
+      "course_url": "https://example.com/python-basics",
+      "platform": "Stepik",
+      "level": "beginner",
+      "created_at": "2024-01-15T10:00:00Z"
+    }
+  },
+  {
+    "model": "education.course",
+    "pk": 2,
+    "fields": {
+      "title": "Веб-разработка для незрячих",
+      "instructor": "Анна Сидорова",
+      "description": "Курс по веб-разработке с фокусом на доступность. Изучите HTML, CSS и создание доступных интерфейсов. Полная поддержка скринридеров.",
+      "duration_hours": 30,
+      "has_subtitles": true,
+      "has_sign_language": true,
+      "has_audio_description": true,
+      "has_transcript": true,
+      "tags": "веб, доступность, html, css",
+      "rating": 4.8,
+      "course_url": "https://example.com/web-accessibility",
+      "platform": "Coursera",
+      "level": "beginner",
+      "created_at": "2024-01-20T10:00:00Z"
+    }
+  },
+  {
+    "model": "education.course",
+    "pk": 3,
+    "fields": {
+      "title": "Математика для Data Science",
+      "instructor": "Михаил Иванов",
+      "description": "Курс по математическим основам Data Science: линейная алгебра, матстатистика, теория вероятностей. Есть сурдоперевод.",
+      "duration_hours": 40,
+      "has_subtitles": true,
+      "has_sign_language": true,
+      "has_audio_description": false,
+      "has_transcript": true,
+      "tags": "математика, data science, статистика",
+      "rating": 4.2,
+      "course_url": "https://example.com/math-ds",
+      "platform": "Открытое образование",
+      "level": "intermediate",
+      "created_at": "2024-02-01T10:00:00Z"
+    }
+  }
+]

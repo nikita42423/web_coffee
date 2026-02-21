@@ -24,7 +24,7 @@
         margin-bottom: 20px;
         padding: 10px 0;
     }
-    
+
     .forum-nav-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -33,13 +33,13 @@
         gap: 20px;
         align-items: center;
     }
-    
+
     .forum-nav-links {
         display: flex;
         gap: 15px;
         flex-wrap: wrap;
     }
-    
+
     .forum-nav-link {
         color: var(--secondary-color);
         text-decoration: none;
@@ -47,17 +47,17 @@
         border-radius: 4px;
         transition: all 0.3s;
     }
-    
+
     .forum-nav-link:hover {
         background: var(--light-bg);
         color: var(--primary-color);
     }
-    
+
     .forum-nav-link.active {
         background: var(--primary-color);
         color: white;
     }
-    
+
     /* Хлебные крошки */
     .breadcrumbs {
         max-width: 1200px;
@@ -66,23 +66,23 @@
         font-size: 0.9em;
         color: var(--secondary-color);
     }
-    
+
     .breadcrumbs a {
         color: var(--primary-color);
         text-decoration: none;
     }
-    
+
     .breadcrumbs a:hover {
         text-decoration: underline;
     }
-    
+
     /* Основной контейнер */
     .forum-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 0 15px 40px;
     }
-    
+
     /* Заголовки разделов */
     .section-title {
         font-size: 1.5em;
@@ -91,7 +91,7 @@
         padding-bottom: 10px;
         border-bottom: 2px solid var(--primary-color);
     }
-    
+
     /* Статистика */
     .forum-stats {
         background: linear-gradient(135deg, var(--primary-color), #0052a3);
@@ -104,22 +104,22 @@
         flex-wrap: wrap;
         gap: 20px;
     }
-    
+
     .stat-item {
         text-align: center;
     }
-    
+
     .stat-value {
         font-size: 2em;
         font-weight: bold;
         display: block;
     }
-    
+
     .stat-label {
         font-size: 0.9em;
         opacity: 0.9;
     }
-    
+
     /* Кнопки */
     .btn {
         display: inline-block;
@@ -131,33 +131,33 @@
         border: none;
         transition: all 0.3s;
     }
-    
+
     .btn-primary {
         background: var(--primary-color);
         color: white;
     }
-    
+
     .btn-primary:hover {
         background: #0052a3;
         transform: translateY(-2px);
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
-    
+
     .btn-secondary {
         background: var(--secondary-color);
         color: white;
     }
-    
+
     .btn-success {
         background: var(--success-color);
         color: white;
     }
-    
+
     .btn-danger {
         background: var(--danger-color);
         color: white;
     }
-    
+
     /* Пагинация */
     .pagination {
         display: flex;
@@ -166,7 +166,7 @@
         margin-top: 30px;
         flex-wrap: wrap;
     }
-    
+
     .page-link {
         display: inline-block;
         padding: 8px 12px;
@@ -177,18 +177,18 @@
         border-radius: 4px;
         transition: all 0.3s;
     }
-    
+
     .page-link:hover {
         background: var(--light-bg);
         border-color: var(--primary-color);
     }
-    
+
     .page-link.current {
         background: var(--primary-color);
         color: white;
         border-color: var(--primary-color);
     }
-    
+
     /* Сообщения */
     .alert {
         padding: 12px 20px;
@@ -196,43 +196,43 @@
         margin-bottom: 20px;
         border-left: 4px solid transparent;
     }
-    
+
     .alert-success {
         background: #d4edda;
         border-left-color: var(--success-color);
         color: #155724;
     }
-    
+
     .alert-error, .alert-danger {
         background: #f8d7da;
         border-left-color: var(--danger-color);
         color: #721c24;
     }
-    
+
     .alert-info {
         background: #d1ecf1;
         border-left-color: var(--info-color);
         color: #0c5460;
     }
-    
+
     .alert-warning {
         background: #fff3cd;
         border-left-color: var(--warning-color);
         color: #856404;
     }
-    
+
     /* Адаптивность */
     @media (max-width: 768px) {
         .forum-nav-container {
             flex-direction: column;
             align-items: flex-start;
         }
-        
+
         .forum-stats {
             flex-direction: column;
             align-items: center;
         }
-        
+
         .section-title {
             font-size: 1.3em;
         }
@@ -259,9 +259,12 @@
                 <a href="{% url 'accounts:profile' %}" class="forum-nav-link">
                     👤 {{ user.username }}
                 </a>
-                <a href="{% url 'accounts:logout' %}" class="forum-nav-link">
-                    🚪 Выйти
-                </a>
+                <form method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="forum-nav-link" style="background: none; border: none; cursor: pointer; font-size: 0.9em; padding: 5px 10px;">
+                        🚪 Выйти
+                    </button>
+                </form>
             {% else %}
                 <a href="{% url 'accounts:login' %}" class="forum-nav-link">
                     🔑 Войти
@@ -292,7 +295,7 @@
             </div>
         {% endfor %}
     {% endif %}
-    
+
     <!-- Контент страницы -->
     {% block forum_content %}{% endblock %}
 </div>
