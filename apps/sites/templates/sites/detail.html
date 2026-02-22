@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ site.title }} - Государственные сайты{% endblock %}
+
+{% block extra_css %}
+<style>
+    .site-detail {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+    
+    .site-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .site-header {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .site-logo {
+        width: 100px;
+        height: 100px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .site-logo img {
+        max-width: 80px;
+        max-height: 80px;
+        object-fit: contain;
+    }
+    
+    .site-title h1 {
+        margin: 0 0 5px 0;
+        font-size: 2em;
+    }
+    
+    .site-category {
+        color: #666;
+        font-size: 0.9em;
+    }
+    
+    .site-description {
+        line-height: 1.8;
+        color: #333;
+        margin-bottom: 30px;
+        font-size: 1.1em;
+    }
+    
+    .site-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .info-item {
+        margin-bottom: 10px;
+    }
+    
+    .info-label {
+        font-weight: bold;
+        color: #555;
+        width: 100px;
+        display: inline-block;
+    }
+    
+    .site-link {
+        display: inline-block;
+        background: #0066cc;
+        color: white;
+        text-decoration: none;
+        padding: 15px 40px;
+        border-radius: 8px;
+        font-size: 1.2em;
+        margin-bottom: 20px;
+        transition: background 0.3s;
+    }
+    
+    .site-link:hover {
+        background: #0052a3;
+    }
+    
+    .visits-info {
+        color: #999;
+        font-size: 0.9em;
+        margin-bottom: 30px;
+    }
+    
+    .similar-sites {
+        margin-top: 40px;
+    }
+    
+    .similar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .similar-item {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        text-decoration: none;
+        color: inherit;
+        transition: background 0.3s;
+    }
+    
+    .similar-item:hover {
+        background: #e9ecef;
+    }
+    
+    .similar-item h4 {
+        margin: 0 0 5px 0;
+        font-size: 1em;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-top: 30px;
+        color: #666;
+        text-decoration: none;
+    }
+    
+    .back-link:hover {
+        color: #0066cc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="site-detail">
+    <div class="site-card">
+        <div class="site-header">
+            <div class="site-logo">
+                {% if site.logo %}
+                    <img src="{{ site.logo.url }}" alt="{{ site.title }}">
+                {% else %}
+                    <span style="font-size: 3em;">{{ site.category.icon }}</span>
+                {% endif %}
+            </div>
+            <div class="site-title">
+                <h1>{{ site.title }}</h1>
+                <div class="site-category">{{ site.category.name }}</div>
+            </div>
+        </div>
+        
+        <div class="site-description">
+            {{ site.description|linebreaks }}
+        </div>
+        
+        {% if site.contact_info or site.phone or site.email %}
+        <div class="site-info">
+            <h3 style="margin-bottom: 15px;">Контактная информация</h3>
+            {% if site.contact_info %}
+                <div class="info-item">
+                    <span class="info-label">Адрес:</span> {{ site.contact_info|linebreaks }}
+                </div>
+            {% endif %}
+            {% if site.phone %}
+                <div class="info-item">
+                    <span class="info-label">Телефон:</span> {{ site.phone }}
+                </div>
+            {% endif %}
+            {% if site.email %}
+                <div class="info-item">
+                    <span class="info-label">Email:</span> {{ site.email }}
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <a href="{% url 'sites:redirect' site.slug %}" class="site-link" target="_blank">
+            Перейти на сайт →
+        </a>
+        
+        <div class="visits-info">
+            👁 {{ site.visits_count }} переходов
+        </div>
+    </div>
+    
+    {% if similar_sites %}
+    <div class="similar-sites">
+        <h3>Похожие сайты</h3>
+        <div class="similar-grid">
+            {% for site in similar_sites %}
+            <a href="{% url 'sites:detail' site.slug %}" class="similar-item">
+                <h4>{{ site.title }}</h4>
+                <small>{{ site.url|truncatechars:30 }}</small>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <a href="{% url 'sites:list' %}" class="back-link">← Вернуться к списку</a>
+</div>
+{% endblock %}

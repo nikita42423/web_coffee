@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Государственные сайты - Проверенные ресурсы{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sites-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+    
+    .sites-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .sites-header h1 {
+        font-size: 2.5em;
+        color: #1a1a1a;
+        margin-bottom: 15px;
+    }
+    
+    .sites-header p {
+        color: #666;
+        font-size: 1.1em;
+    }
+    
+    .search-section {
+        max-width: 600px;
+        margin: 0 auto 30px;
+    }
+    
+    .search-form {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .search-input {
+        flex: 1;
+        padding: 12px 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1em;
+    }
+    
+    .search-button {
+        padding: 12px 30px;
+        background: #0066cc;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    
+    .categories-section {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+        justify-content: center;
+    }
+    
+    .category-tag {
+        padding: 8px 20px;
+        background: #f0f0f0;
+        border-radius: 30px;
+        color: #333;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    
+    .category-tag:hover,
+    .category-tag.active {
+        background: #0066cc;
+        color: white;
+    }
+    
+    .featured-section {
+        margin-bottom: 40px;
+    }
+    
+    .featured-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .featured-card {
+        background: linear-gradient(135deg, #0066cc, #004999);
+        color: white;
+        padding: 25px;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: transform 0.3s;
+    }
+    
+    .featured-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .sites-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+    
+    .site-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .site-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .site-logo {
+        height: 100px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .site-logo img {
+        max-width: 100%;
+        max-height: 70px;
+        object-fit: contain;
+    }
+    
+    .site-content {
+        padding: 20px;
+    }
+    
+    .site-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .site-title h3 {
+        margin: 0;
+        font-size: 1.2em;
+    }
+    
+    .site-category {
+        background: #e9ecef;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+    }
+    
+    .site-description {
+        color: #666;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+    
+    .site-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #e0e0e0;
+        padding-top: 15px;
+        color: #999;
+        font-size: 0.9em;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 40px;
+    }
+    
+    .page-link {
+        padding: 8px 14px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        color: #0066cc;
+        text-decoration: none;
+    }
+    
+    .page-link.current {
+        background: #0066cc;
+        color: white;
+        border-color: #0066cc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sites-page">
+    <div class="sites-header">
+        <h1>🏛️ Государственные и официальные сайты</h1>
+        <p>Проверенные ресурсы для получения государственных услуг и информации</p>
+    </div>
+    
+    <div class="search-section">
+        <form class="search-form" method="get">
+            <input type="text" name="q" class="search-input" 
+                   placeholder="Поиск по названию..." value="{{ query }}">
+            <button type="submit" class="search-button">Найти</button>
+        </form>
+    </div>
+    
+    <div class="categories-section">
+        <a href="{% url 'sites:list' %}" class="category-tag {% if not current_category %}active{% endif %}">
+            🏠 Все
+        </a>
+        {% for category in categories %}
+            <a href="?category={{ category.slug }}" 
+               class="category-tag {% if current_category == category.slug %}active{% endif %}">
+                {{ category.icon }} {{ category.name }} ({{ category.sites_count }})
+            </a>
+        {% endfor %}
+    </div>
+    
+    {% if featured_sites and not query %}
+    <div class="featured-section">
+        <h2 style="margin-bottom: 20px;">⭐ Рекомендуемые</h2>
+        <div class="featured-grid">
+            {% for site in featured_sites %}
+            <a href="{% url 'sites:detail' site.slug %}" class="featured-card">
+                <h3 style="margin-bottom: 10px;">{{ site.title }}</h3>
+                <p style="opacity: 0.9;">{{ site.short_description|default:site.description|truncatechars:100 }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="sites-grid">
+        {% for site in sites %}
+        <a href="{% url 'sites:detail' site.slug %}" class="site-card">
+            <div class="site-logo">
+                {% if site.logo %}
+                    <img src="{{ site.logo.url }}" alt="{{ site.title }}">
+                {% else %}
+                    <span style="font-size: 2em;">{{ site.category.icon }}</span>
+                {% endif %}
+            </div>
+            <div class="site-content">
+                <div class="site-title">
+                    <h3>{{ site.title }}</h3>
+                    <span class="site-category">{{ site.category.name }}</span>
+                </div>
+                <div class="site-description">
+                    {{ site.short_description|default:site.description|truncatechars:120 }}
+                </div>
+                <div class="site-footer">
+                    <span>{{ site.url|truncatechars:30 }}</span>
+                    <span>👁 {{ site.visits_count }}</span>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
+            <p>😕 Сайты не найдены</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if sites.has_other_pages %}
+    <div class="pagination">
+        {% if sites.has_previous %}
+            <a href="?page=1{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="page-link">&laquo;</a>
+            <a href="?page={{ sites.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="page-link">‹</a>
+        {% endif %}
+        
+        <span class="page-link current">{{ sites.number }}</span>
+        
+        {% if sites.has_next %}
+            <a href="?page={{ sites.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="page-link">›</a>
+            <a href="?page={{ sites.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="page-link">&raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

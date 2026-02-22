@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Фильмы{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Фильмы</h1>
+    <div class="row">
+        {% for film in films %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ film.title }}</h5>
+                        <p class="card-text">{{ film.description|truncatechars:100 }}</p>
+                        <a href="{% url 'films:film_detail' film.id %}" class="btn btn-primary">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>Фильмов пока нет</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
