@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.contenttypes.fields import GenericRelation
+
 
 class Book(models.Model):
     title = models.CharField('Название', max_length=200)
@@ -15,8 +17,9 @@ class Book(models.Model):
     # Теги для рекомендаций
     tags = models.CharField('Теги (через запятую)', max_length=300, blank=True)
 
-    # Рейтинг
-    rating = models.FloatField('Рейтинг', default=0.0)
+    # Связь с общей системой отзывов
+    reviews = GenericRelation('reviews.Review', content_type_field='content_type', object_id_field='object_id')
+    favorites = GenericRelation('reviews.Favorite', content_type_field='content_type', object_id_field='object_id')
 
     class Meta:
         verbose_name = 'Книга'
@@ -32,49 +35,29 @@ class Book(models.Model):
             return [tag.strip() for tag in self.tags.split(',')]
         return []
 
+    @property
+    def average_rating(self):
+        """Средний рейтинг из общей системы"""
+        from apps.reviews.services import get_average_rating
+        return get_average_rating('book', self.id)
 
-class Rating(models.Model):
-    """Оценка книги пользователем от 1 до 5"""
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='ratings')
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
-    value = models.IntegerField('Оценка', choices=[(i, str(i)) for i in range(1, 6)])
-    created_at = models.DateTimeField('Дата оценки', auto_now_add=True)
+    @property
+    def review_count(self):
+        """Количество отзывов из общей системы"""
+        from apps.reviews.services import get_review_count
+        return get_review_count('book', self.id)
 
-    class Meta:
-        unique_together = ('book', 'user')
-        verbose_name = 'Оценка'
-        verbose_name_plural = 'Оценки'
+    def get_reviews(self):
+        """Получить все отзывы для этой книги"""
+        from apps.reviews.services import get_reviews_for
+        return get_reviews_for('book', self.id)
 
-    def __str__(self):
-        return f'{self.user.username} - {self.book.title}: {self.value}'
+    def add_review(self, user, rating, comment='', **accessibility_fields):
+        """Добавить отзыв для этой книги"""
+        from apps.reviews.services import add_review
+        return add_review(user, self, rating, comment, **accessibility_fields)
 
-
-class Comment(models.Model):
-    """Комментарий к книге"""
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='comments')
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
-    text = models.TextField('Текст комментария')
-    created_at = models.DateTimeField('Дата комментария', auto_now_add=True)
-
-    class Meta:
-        verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии'
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return f'{self.user.username} - {self.book.title}'
-
-
-class Favorite(models.Model):
-    """Избранное (лайк) книги пользователем"""
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='favorites')
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
-    created_at = models.DateTimeField('Дата добавления', auto_now_add=True)
-
-    class Meta:
-        unique_together = ('book', 'user')
-        verbose_name = 'Избранное'
-        verbose_name_plural = 'Избранное'
-
-    def __str__(self):
-        return f'{self.user.username} - {self.book.title}'
+    def is_favorited_by(self, user):
+        """Проверить, находится ли книга в избранном у пользователя"""
+        from apps.reviews.services import is_favorited
+        return is_favorited(user, self) if user.is_authenticated else False

@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'apps.films',
     'apps.forum',
     'apps.accounts',
+    'apps.reviews',
 ]
 
 MIDDLEWARE = [

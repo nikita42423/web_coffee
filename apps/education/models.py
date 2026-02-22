@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.contenttypes.fields import GenericRelation
+
 
 class Course(models.Model):
     title = models.CharField('Название курса', max_length=200)
@@ -16,9 +18,6 @@ class Course(models.Model):
     # Теги для рекомендаций
     tags = models.CharField('Теги (через запятую)', max_length=300, blank=True)
 
-    # Рейтинг
-    rating = models.FloatField('Рейтинг', default=0.0)
-
     # Ссылка на курс
     course_url = models.URLField('Ссылка на курс', blank=True)
     platform = models.CharField('Платформа', max_length=100, blank=True)
@@ -30,6 +29,10 @@ class Course(models.Model):
         ('advanced', 'Продвинутый'),
     ]
     level = models.CharField('Уровень', max_length=20, choices=LEVEL_CHOICES, default='beginner')
+
+    # Связь с общей системой отзывов
+    reviews = GenericRelation('reviews.Review', content_type_field='content_type', object_id_field='object_id')
+    favorites = GenericRelation('reviews.Favorite', content_type_field='content_type', object_id_field='object_id')
 
     class Meta:
         verbose_name = 'Курс'
@@ -45,26 +48,40 @@ class Course(models.Model):
             return [tag.strip() for tag in self.tags.split(',')]
         return []
 
+    @property
+    def average_rating(self):
+        """Средний рейтинг из общей системы"""
+        from apps.reviews.services import get_average_rating
+        return get_average_rating('course', self.id)
+
+    @property
+    def review_count(self):
+        """Количество отзывов из общей системы"""
+        from apps.reviews.services import get_review_count
+        return get_review_count('course', self.id)
+
+    def get_reviews(self):
+        """Получить все отзывы для этого курса"""
+        from apps.reviews.services import get_reviews_for
+        return get_reviews_for('course', self.id)
+
+    def add_review(self, user, rating, comment='', **accessibility_fields):
+        """Добавить отзыв для этого курса"""
+        from apps.reviews.services import add_review
+        return add_review(user, self, rating, comment, **accessibility_fields)
+
+    def is_favorited_by(self, user):
+        """Проверить, находится ли курс в избранном у пользователя"""
+        from apps.reviews.services import is_favorited
+        return is_favorited(user, self) if user.is_authenticated else False
+
     def update_rating(self):
-        """Пересчитать средний рейтинг на основе отзывов"""
-        reviews = self.reviews.all()
-        if reviews:
-            self.rating = sum(review.rating for review in reviews) / reviews.count()
-            self.save(update_fields=['rating'])
-
-
-class Review(models.Model):
-    """Отзыв и оценка курса"""
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='reviews')
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='education_reviews')
-    rating = models.IntegerField('Оценка', choices=[(i, str(i)) for i in range(1, 6)])
-    comment = models.TextField('Комментарий', blank=True)
-    created_at = models.DateTimeField('Дата добавления', auto_now_add=True)
-
-    class Meta:
-        verbose_name = 'Отзыв'
-        verbose_name_plural = 'Отзывы'
-        unique_together = ('course', 'user')  # один пользователь — одна оценка на курс
-
-    def __str__(self):
-        return f'{self.user.username} — {self.course.title}: {self.rating}'
+        """Пересчитать средний рейтинг на основе отзывов (устаревший метод)"""
+        # Этот метод оставлен для обратной совместимости
+        # В новой системе рейтинг кэшируется автоматически
+        from django.contrib.contenttypes.models import ContentType
+        from apps.reviews.services import get_cached_rating
+        content_type = ContentType.objects.get_for_model(self)
+        cached = get_cached_rating(content_type, self.id)
+        self.rating = cached.average_rating
+        self.save(update_fields=['rating'])

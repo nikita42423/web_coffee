@@ -31,19 +31,19 @@
                     <div class="row g-2 mb-3">
                         <div class="col-4">
                             <div class="border rounded p-2">
-                                <div class="fw-bold">0</div>
+                                <div class="fw-bold">{{ books_count|default:0 }}</div>
                                 <small class="text-muted">Книг</small>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="border rounded p-2">
-                                <div class="fw-bold">0</div>
+                                <div class="fw-bold">{{ films_count|default:0 }}</div>
                                 <small class="text-muted">Фильмов</small>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="border rounded p-2">
-                                <div class="fw-bold">0</div>
+                                <div class="fw-bold">{{ courses_count|default:0 }}</div>
                                 <small class="text-muted">Курсов</small>
                             </div>
                         </div>
@@ -176,9 +176,24 @@
                                 <h6 class="border-bottom pb-2">
                                     <i class="bi bi-film text-success"></i> Фильмы
                                 </h6>
-                                <div class="alert alert-secondary">
-                                    <p class="mb-0 small">У вас пока нет избранных фильмов. Отмечайте фильмы ❤️, чтобы они появились здесь.</p>
-                                </div>
+                                {% if favorite_films %}
+                                    <div class="list-group">
+                                        {% for favorite in favorite_films %}
+                                        <div class="list-group-item">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">{{ favorite.film.title }}</h6>
+                                                <small>{{ favorite.created_at|date:"d.m.Y" }}</small>
+                                            </div>
+                                            <p class="mb-1 text-muted">{{ favorite.film.description|truncatechars:100 }}</p>
+                                            <small class="text-muted">Добавлено в избранное</small>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-secondary">
+                                        <p class="mb-0 small">У вас пока нет избранных фильмов. Отмечайте фильмы ❤️, чтобы они появились здесь.</p>
+                                    </div>
+                                {% endif %}
                             </div>
 
                             <!-- Курсы -->
@@ -186,9 +201,24 @@
                                 <h6 class="border-bottom pb-2">
                                     <i class="bi bi-mortarboard text-info"></i> Курсы
                                 </h6>
-                                <div class="alert alert-secondary">
-                                    <p class="mb-0 small">У вас пока нет избранных курсов. Отмечайте курсы ❤️, чтобы они появились здесь.</p>
-                                </div>
+                                {% if favorite_courses %}
+                                    <div class="list-group">
+                                        {% for favorite in favorite_courses %}
+                                        <a href="{% url 'education:course_detail' favorite.course.id %}" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">{{ favorite.course.title }}</h6>
+                                                <small>{{ favorite.created_at|date:"d.m.Y" }}</small>
+                                            </div>
+                                            <p class="mb-1 text-muted">{{ favorite.course.description|truncatechars:100 }}</p>
+                                            <small class="text-muted">Добавлено в избранное</small>
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-secondary">
+                                        <p class="mb-0 small">У вас пока нет избранных курсов. Отмечайте курсы ❤️, чтобы они появились здесь.</p>
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

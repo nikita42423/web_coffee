@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Course, Review
+from .models import Course
 
 
 @admin.register(Course)
@@ -13,7 +13,6 @@ class CourseAdmin(admin.ModelAdmin):
         'has_sign_language',
         'has_audio_description',
         'has_transcript',
-        'rating',
         'created_at',
     )
     list_filter = (
@@ -38,15 +37,7 @@ class CourseAdmin(admin.ModelAdmin):
             'fields': ('has_subtitles', 'has_sign_language', 'has_audio_description', 'has_transcript')
         }),
         ('Метаданные', {
-            'fields': ('tags', 'rating', 'course_url', 'platform')
+            'fields': ('tags', 'course_url', 'platform')
         }),
     )
-    ordering = ('-created_at',)
-
-
-@admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('course', 'user', 'rating', 'created_at')
-    list_filter = ('rating', 'created_at')
-    search_fields = ('course__title', 'user__username', 'comment')
     ordering = ('-created_at',)
